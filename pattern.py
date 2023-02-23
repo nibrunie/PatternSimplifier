@@ -60,14 +60,15 @@ class LinePattern:
                     else:
                         chain += 1
                     lastNum = num
-                num = numList[-1]
-                if num != lastNum + 1:
-                    if chain == 1:
-                        numPattern += f",{num}"
+                if len(numList) > 1:
+                    num = numList[-1]
+                    if num != lastNum + 1:
+                        if chain == 1:
+                            numPattern += f",{num}"
+                        else:
+                            numPattern += f"-{lastNum},{num}"
                     else:
-                        numPattern += f"-{lastNum},{num}"
-                else:
-                    numPattern += f"-{num}"
+                        numPattern += f"-{num}"
                 s += f"[{numPattern}]"
         return s
 

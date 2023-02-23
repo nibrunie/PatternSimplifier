@@ -7,9 +7,10 @@ class LinePattern:
     """ generate a pattern structure for a set of line(s)
         gathering information about non-numerical labels and their position
         and numerical label patterns and their position"""
-    def __init__(self, labels, nums):
+    def __init__(self, labels, nums, count):
         self.labels = labels
         self.nums = nums
+        self.count = count # number of matches
 
     @property
     def key(self):
@@ -25,7 +26,7 @@ class LinePattern:
                 nums[i] = set([int(grp)])
             else:
                 labels[i] = grp
-        return LinePattern(labels, nums)
+        return LinePattern(labels, nums, 1)
 
     def match(self, otherPattern):
         for labelId in self.labels:
@@ -38,15 +39,18 @@ class LinePattern:
     def merge(self, otherPattern):
         for numId in otherPattern.nums:
             self.nums[numId].update(otherPattern.nums[numId])
+        self.count += otherPattern.count
 
     @property
     def summary(self):
         s = ""
+        maxNum = 1
         for i in range(len(self.labels) + len(self.nums)):
             if i in self.labels:
                 s += self.labels[i]
             else:
                 numList = sorted(list(self.nums[i]))
+                maxNum *= len(numList)
                 numPattern = f"{numList[0]}"
                 lastNum = numList[0]
                 chain = 1
@@ -60,22 +64,23 @@ class LinePattern:
                     else:
                         chain += 1
                     lastNum = num
-                num = numList[-1]
-                if num != lastNum + 1:
-                    if chain == 1:
-                        numPattern += f",{num}"
+                if len(numList) > 1:
+                    num = numList[-1]
+                    if num != lastNum + 1:
+                        if chain == 1:
+                            numPattern += f",{num}"
+                        else:
+                            numPattern += f"-{lastNum},{num}"
                     else:
-                        numPattern += f"-{lastNum},{num}"
-                else:
-                    numPattern += f"-{num}"
+                        numPattern += f"-{num}"
                 s += f"[{numPattern}]"
-        return s
+        return f"{s} {self.count}/{maxNum}"
 
 
 if __name__ == "__main__":
     patterns = {}
     for line in fileinput.input():
-        newPattern = LinePattern.parseLine(line)
+        newPattern = LinePattern.parseLine(line.replace("\n",""))
         if newPattern.key in patterns:
             patterns[newPattern.key].merge(newPattern)
         else:

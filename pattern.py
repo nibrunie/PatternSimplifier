@@ -75,7 +75,7 @@ class LinePattern:
 if __name__ == "__main__":
     patterns = {}
     for line in fileinput.input():
-        newPattern = LinePattern.parseLine(line)
+        newPattern = LinePattern.parseLine(line.replace("\n",""))
         if newPattern.key in patterns:
             patterns[newPattern.key].merge(newPattern)
         else:
